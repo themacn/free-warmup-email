@@ -1,0 +1,35 @@
+{
+  "contacts": [],
+  "campaigns": [],
+  "settings": {
+    "smtp": {
+      "host": "",
+      "port": 587,
+      "secure": false,
+      "user": "",
+      "pass": "",
+      "fromEmail": "",
+      "fromName": ""
+    },
+    "linkedin": {
+      "sessionCookies": "",
+      "loginEmail": "",
+      "loginPassword": ""
+    },
+    "openrouter": {
+      "apiKey": "",
+      "model": "anthropic/claude-3-haiku"
+    },
+    "emailLimits": {
+      "dailyLimit": 50,
+      "emailsPerBatch": 5,
+      "delayBetweenEmails": 30000,
+      "delayBetweenBatches": 300000
+    },
+    "signature": "<br><br>Best regards,<br>Your Name<br>Email: your@email.com<br>Phone: (+1) 123-456-7890"
+  },
+  "dailyStats": {
+    "date": "Fri Oct 03 2025",
+    "sentToday": 0
+  }
+}

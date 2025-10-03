@@ -1,18 +1,61 @@
 {
-  "name": "warmup-email",
-  "version": "1.0.0",
-  "main": "warmup.js",
+  "name": "cold-email-service",
+  "version": "2.0.0",
+  "main": "src/main.js",
+  "homepage": "./",
   "scripts": {
-    "start": "node warmup.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder",
+    "dist": "electron-builder --publish=never",
+    "postinstall": "electron-builder install-app-deps",
+    "electron:pack": "electron-builder --dir",
+    "electron:dist": "electron-builder"
   },
-  "keywords": [],
+  "keywords": [
+    "cold-email",
+    "linkedin-scraper",
+    "email-automation"
+  ],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Cold emailing service with LinkedIn scraping and AI-powered personalization",
   "dependencies": {
+    "axios": "^1.7.0",
     "csv-parser": "^3.2.0",
     "dotenv": "^17.2.3",
-    "nodemailer": "^7.0.6"
+    "electron": "^32.0.0",
+    "lowdb": "^1.0.0",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^7.0.6",
+    "puppeteer": "^23.0.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "electron-builder": "^26.0.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.14"
+  },
+  "build": {
+    "appId": "com.coldemailservice.app",
+    "productName": "Cold Email Service",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "database/**/*",
+      "views/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
   }
 }

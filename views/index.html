@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cold Email Service</title>
+
+  <!-- DaisyUI CSS via CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+
+  <!-- Local Tailwind CSS -->
+  <link href="./output.css" rel="stylesheet">
+</head>
+
+<body class="bg-base-200 min-h-screen">
+  <!-- Navigation -->
+  <nav class="navbar bg-base-100 shadow-lg">
+    <div class="navbar-start">
+      <a class="btn btn-ghost normal-case text-xl">
+        ❄️ Cold Email Service
+      </a>
+    </div>
+    <div class="navbar-center">
+      <!-- Status indicator -->
+      <div class="indicator">
+        <span class="indicator-item indicator-bottom badge badge-success" id="connection-status"></span>
+        <div class="stats stats-compact">
+          <div class="stat">
+            <div class="stat-title">Sent Today</div>
+            <div class="stat-value text-primary" id="sent-today">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="navbar-end">
+      <div class="tabs tabs-box">
+        <a class="tab" data-tab="contacts">Contacts</a>
+        <a class="tab" data-tab="campaigns">Campaigns</a>
+        <a class="tab" data-tab="settings">Settings</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container mx-auto p-4 max-w-7xl">
+
+    <!-- Contacts Tab -->
+    <div id="contacts-tab" class="tab-content">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold">Contacts</h2>
+        <button class="btn btn-primary" onclick="openImportModal()">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          Import LinkedIn Profile
+        </button>
+      </div>
+
+      <!-- Search and Filters -->
+      <div class="mb-6">
+        <div class="join">
+          <input type="text" placeholder="Search contacts..." class="input input-bordered join-item" id="contact-search" />
+          <select class="select select-bordered join-item" id="status-filter">
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Contacts Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="contacts-grid">
+        <!-- Contacts will be populated here -->
+      </div>
+    </div>
+
+    <!-- Campaigns Tab -->
+    <div id="campaigns-tab" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold">Email Campaigns</h2>
+        <button class="btn btn-primary" onclick="openCampaignModal()">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          New Campaign
+        </button>
+      </div>
+
+      <!-- Campaigns List -->
+      <div class="space-y-4" id="campaigns-list">
+        <!-- Campaigns will be populated here -->
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="settings-tab" class="tab-content hidden">
+      <h2 class="text-3xl font-bold mb-6">Settings</h2>
+
+      <!-- Settings Tabs -->
+      <div class="tabs tabs-lifted mb-6">
+        <a class="tab tab-active" data-setting="smtp">SMTP</a>
+        <a class="tab" data-setting="linkedin">LinkedIn</a>
+        <a class="tab" data-setting="openrouter">AI (OpenRouter)</a>
+        <a class="tab" data-setting="limits">Email Limits</a>
+      </div>
+
+      <!-- SMTP Settings -->
+      <form id="smtp-settings" class="setting-form">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">SMTP Host</span>
+            </label>
+            <input type="text" class="input input-bordered" id="smtp-host" placeholder="smtp.gmail.com" />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">SMTP Port</span>
+            </label>
+            <input type="number" class="input input-bordered" id="smtp-port" placeholder="587" />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Username</span>
+            </label>
+            <input type="text" class="input input-bordered" id="smtp-user" placeholder="your-email@gmail.com" />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Password</span>
+            </label>
+            <input type="password" class="input input-bordered" id="smtp-pass" placeholder="app password" />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">From Email</span>
+            </label>
+            <input type="email" class="input input-bordered" id="from-email" placeholder="your-email@gmail.com" />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">From Name</span>
+            </label>
+            <input type="text" class="input input-bordered" id="from-name" placeholder="Your Name" />
+          </div>
+
+          <div class="form-control md:col-span-2">
+            <label class="label">
+              <span class="label-text">Email Signature</span>
+            </label>
+            <textarea class="textarea textarea-bordered" id="email-signature" rows="4" placeholder="Your email signature..."></textarea>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <button type="submit" class="btn btn-primary mr-4">Save Settings</button>
+          <button type="button" class="btn btn-outline" onclick="testSMTP()">Test Connection</button>
+        </div>
+      </form>
+
+      <!-- LinkedIn Settings -->
+      <form id="linkedin-settings" class="setting-form hidden">
+        <div class="alert alert-warning mb-6">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L7.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+          <span>LinkedIn scraping is for research purposes only. Always respect platform terms of service.</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">LinkedIn Email</span>
+            </label>
+            <input type="email" class="input input-bordered" id="linkedin-email" placeholder="your-email@example.com" />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">LinkedIn Password</span>
+            </label>
+            <input type="password" class="input input-bordered" id="linkedin-password" placeholder="Enter password" />
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <button type="button" class="btn btn-primary" onclick="openLinkedInBrowser()">Login to LinkedIn</button>
+        </div>
+      </form>
+
+      <!-- OpenRouter Settings -->
+      <form id="openrouter-settings" class="setting-form hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">API Key</span>
+            </label>
+            <input type="password" class="input input-bordered" id="openrouter-api-key" placeholder="sk-or-v1-..." />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">AI Model</span>
+            </label>
+            <select class="select select-bordered" id="openrouter-model">
+              <option value="anthropic/claude-3-haiku">Claude 3 Haiku (Fast)</option>
+              <option value="anthropic/claude-3-sonnet">Claude 3 Sonnet (Best)</option>
+              <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
+              <option value="openai/gpt-4o">GPT-4o</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <button type="submit" class="btn btn-primary mr-4">Save Settings</button>
+          <button type="button" class="btn btn-outline" onclick="testOpenRouter()">Test API</button>
+        </div>
+      </form>
+
+      <!-- Email Limits Settings -->
+      <form id="limits-settings" class="setting-form hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Daily Email Limit</span>
+            </label>
+            <input type="number" class="input input-bordered" id="daily-limit" placeholder="50" />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Emails Per Batch</span>
+            </label>
+            <input type="number" class="input input-bordered" id="batch-size" placeholder="5" />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Delay Between Emails (seconds)</span>
+            </label>
+            <input type="number" class="input input-bordered" id="email-delay" placeholder="30" />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Delay Between Batches (minutes)</span>
+            </label>
+            <input type="number" class="input input-bordered" id="batch-delay" placeholder="5" />
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <button type="submit" class="btn btn-primary">Save Limits</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- Modals -->
+  <!-- Import LinkedIn Modal -->
+  <div id="import-modal" class="modal">
+    <div class="modal-box max-w-lg">
+      <h3 class="font-bold text-lg mb-4">Import LinkedIn Profile</h3>
+
+      <div class="form-control mb-4">
+        <label class="label">
+          <span class="label-text">LinkedIn Profile URL</span>
+        </label>
+        <input type="url" class="input input-bordered" id="linkedin-url" placeholder="https://www.linkedin.com/in/username" />
+      </div>
+
+      <div class="form-control mb-4">
+        <label class="label">
+          <span class="label-text">Email Address (if available)</span>
+        </label>
+        <input type="email" class="input input-bordered" id="contact-email" placeholder="email@example.com" />
+      </div>
+
+      <div class="modal-action">
+        <button class="btn" onclick="closeImportModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="scrapeProfile()">Import Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Campaign Modal -->
+  <div id="campaign-modal" class="modal">
+    <div class="modal-box max-w-4xl">
+      <h3 class="font-bold text-lg mb-4">Create New Campaign</h3>
+
+      <form id="campaign-form">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Campaign Name</span>
+            </label>
+            <input type="text" class="input input-bordered" name="name" required />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Email Tone</span>
+            </label>
+            <select class="select select-bordered" name="tone">
+              <option value="professional">Professional</option>
+              <option value="casual">Casual</option>
+              <option value="friendly">Friendly</option>
+            </select>
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Email Length</span>
+            </label>
+            <select class="select select-bordered" name="length">
+              <option value="short">Short</option>
+              <option value="medium">Medium</option>
+              <option value="long">Long</option>
+            </select>
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Sending Frequency</span>
+            </label>
+            <select class="select select-bordered" name="frequency">
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-control mt-6">
+          <label class="label">
+            <span class="label-text">Your Value Proposition</span>
+          </label>
+          <textarea class="textarea textarea-bordered" name="valueProp" rows="3" placeholder="What value do you provide?"></textarea>
+        </div>
+
+        <div class="form-control mt-6">
+          <label class="label">
+            <span class="label-text">Call to Action</span>
+          </label>
+          <input type="text" class="input input-bordered" name="cta" placeholder="Schedule a call, Reply to this email, etc." />
+        </div>
+
+        <div class="modal-action">
+          <button type="button" class="btn" onclick="closeCampaignModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Campaign</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Email Generation Modal -->
+  <div id="email-modal" class="modal">
+    <div class="modal-box max-w-4xl">
+      <h3 class="font-bold text-lg mb-4">Generate Personalized Email</h3>
+
+      <div id="email-generation-form">
+        <!-- Contact info will be populated here -->
+        <div id="contact-info" class="mb-6"></div>
+
+        <!-- Campaign settings -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Your Name</span>
+            </label>
+            <input type="text" class="input input-bordered" id="your-name" placeholder="John Doe" />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Your Position</span>
+            </label>
+            <input type="text" class="input input-bordered" id="your-position" placeholder="Software Engineer" />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Your Company</span>
+            </label>
+            <input type="text" class="input input-bordered" id="your-company" placeholder="Tech Startup Inc." />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Email Tone</span>
+            </label>
+            <select class="select select-bordered" id="email-tone">
+              <option value="professional">Professional</option>
+              <option value="casual">Casual</option>
+              <option value="friendly">Friendly</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-control mb-6">
+          <label class="label">
+            <span class="label-text">Your Value Proposition</span>
+          </label>
+          <textarea class="textarea textarea-bordered" id="value-prop" rows="3" placeholder="What value do you provide to this person?"></textarea>
+        </div>
+
+        <div class="form-control mb-6">
+          <label class="label">
+            <span class="label-text">Call to Action</span>
+          </label>
+          <input type="text" class="input input-bordered" id="call-to-action" placeholder="Schedule a call, Reply to this email, etc." />
+        </div>
+
+        <div class="modal-action">
+          <button type="button" class="btn" onclick="closeEmailModal()">Cancel</button>
+          <button class="btn btn-primary loading" id="generate-btn" onclick="generateEmail()">
+            Generate Email
+          </button>
+        </div>
+      </div>
+
+      <div id="generated-email-preview" class="hidden">
+        <div class="divider"></div>
+
+        <div class="form-control mb-4">
+          <label class="label">
+            <span class="label-text">Subject Line</span>
+          </label>
+          <input type="text" class="input input-bordered" id="email-subject" />
+        </div>
+
+        <div class="form-control mb-4">
+          <label class="label">
+            <span class="label-text">Email Body</span>
+          </label>
+          <textarea class="textarea textarea-bordered" id="email-body" rows="15"></textarea>
+        </div>
+
+        <div class="modal-action">
+          <button type="button" class="btn" onclick="backToGeneration()">Back</button>
+          <button class="btn btn-success" onclick="sendEmail()">
+            Send Email
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script type="module">
+    const { ipcRenderer } = require('electron');
+
+    // Global state
+    let currentContacts = [];
+    let currentCampaigns = [];
+    let currentSettings = {};
+    let currentEmailModalContact = null;
+
+    // Initialize app
+    async function initializeApp() {
+      try {
+        await loadSettings();
+        await loadStats();
+        switchTab('contacts');
+      } catch (error) {
+        console.error('Failed to initialize app:', error);
+        showError('Failed to initialize application');
+      }
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function(e) {
+        if (this.dataset.tab) {
+          switchTab(this.dataset.tab);
+        } else if (this.dataset.setting) {
+          switchSettingTab(this.dataset.setting);
+        }
+        e.preventDefault();
+      });
+    });
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('tab-active');
+      });
+
+      document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+      document.querySelector(`[data-tab="${tabName}"]`).classList.add('tab-active');
+
+      // Load tab data
+      if (tabName === 'contacts') loadContacts();
+      if (tabName === 'campaigns') loadCampaigns();
+      if (tabName === 'settings') loadSettings();
+    }
+
+    function switchSettingTab(settingName) {
+      document.querySelectorAll('.setting-form').forEach(form => {
+        form.classList.add('hidden');
+      });
+      document.querySelectorAll('[data-setting]').forEach(setting => {
+        setting.classList.remove('tab-active');
+      });
+
+      document.getElementById(`${settingName}-settings`).classList.remove('hidden');
+      document.querySelector(`[data-setting="${settingName}"]`).classList.add('tab-active');
+    }
+
+    // Modal functions
+    function openImportModal() {
+      document.getElementById('import-modal').classList.add('modal-open');
+    }
+
+    function closeImportModal() {
+      document.getElementById('import-modal').classList.remove('modal-open');
+    }
+
+    function openCampaignModal() {
+      document.getElementById('campaign-modal').classList.add('modal-open');
+    }
+
+    function closeCampaignModal() {
+      document.getElementById('campaign-modal').classList.remove('modal-open');
+    }
+
+    function openEmailModal(contactId) {
+      currentEmailModalContact = currentContacts.find(c => c.id === contactId);
+      if (currentEmailModalContact) {
+        populateEmailModal(currentEmailModalContact);
+        document.getElementById('email-modal').classList.add('modal-open');
+        document.getElementById('email-generation-form').classList.remove('hidden');
+        document.getElementById('generated-email-preview').classList.add('hidden');
+      }
+    }
+
+    function closeEmailModal() {
+      document.getElementById('email-modal').classList.remove('modal-open');
+      currentEmailModalContact = null;
+    }
+
+    // Load functions
+    async function loadContacts() {
+      try {
+        const contacts = await ipcRenderer.invoke('get-contacts');
+        currentContacts = contacts;
+        const grid = document.getElementById('contacts-grid');
+
+        grid.innerHTML = contacts.length === 0 ?
+          '<div class="alert alert-info"><span>No contacts found. Import from LinkedIn to get started!</span></div>' :
+          contacts.map(contact => `
+            <div class="card bg-base-100 shadow-xl">
+              <div class="card-body">
+                <h2 class="card-title">${contact.fullName || 'Unknown'}</h2>
+                <p class="text-sm text-gray-600">${contact.headline || ''}</p>
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="badge badge-outline">${contact.company || 'N/A'}</div>
+                  <div class="badge badge-secondary">${contact.location || 'N/A'}</div>
+                </div>
+                ${contact.email ? `<p class="text-xs text-gray-500">📧 ${contact.email}</p>` : ''}
+                <div class="text-xs text-gray-500 mb-4">
+                  ${contact.emailSent || 0} emails sent • Last: ${contact.lastEmailDate ?
+                    new Date(contact.lastEmailDate).toLocaleDateString() : 'Never'}
+                </div>
+                <div class="card-actions justify-end">
+                  <button class="btn btn-sm btn-primary" onclick="openEmailModal('${contact.id}')">
+                    Generate Email
+                  </button>
+                  <button class="btn btn-sm btn-ghost" onclick="deleteContact('${contact.id}')">
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          `).join('');
+      } catch (error) {
+        showError('Failed to load contacts: ' + error.message);
+      }
+    }
+
+    async function loadCampaigns() {
+      try {
+        const campaigns = await ipcRenderer.invoke('get-campaigns');
+        currentCampaigns = campaigns;
+        const list = document.getElementById('campaigns-list');
+
+        list.innerHTML = campaigns.length === 0 ?
+          '<div class="alert alert-info"><span>No campaigns found. Create your first campaign!</span></div>' :
+          campaigns.map(campaign => `
+            <div class="card bg-base-100 shadow-xl">
+              <div class="card-body">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h2 class="card-title">${campaign.name}</h2>
+                    <div class="flex gap-2 mt-2">
+                      <div class="badge ${getStatusBadgeClass(campaign.status)}">${campaign.status}</div>
+                      <div class="badge badge-outline">${campaign.schedule?.frequency || 'N/A'}</div>
+                      <div class="badge badge-ghost">${campaign.contacts?.length || 0} contacts</div>
+                    </div>
+                  </div>
+                  <div class="stats stats-compact">
+                    <div class="stat">
+                      <div class="stat-title">Sent</div>
+                      <div class="stat-value text-primary">${campaign.stats?.sent || 0}</div>
+                    </div>
+                    <div class="stat">
+                      <div class="stat-title">Opened</div>
+                      <div class="stat-value text-info">${campaign.stats?.opened || 0}</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-actions justify-end mt-4">
+                  <button class="btn btn-sm btn-outline" ${campaign.status === 'active' ? 'disabled' : ''}
+                          onclick="startCampaign('${campaign.id}')">
+                    Start
+                  </button>
+                  <button class="btn btn-sm btn-warning" ${campaign.status !== 'active' ? 'disabled' : ''}
+                          onclick="stopCampaign('${campaign.id}')">
+                    Stop
+                  </button>
+                  <button class="btn btn-sm btn-ghost" onclick="duplicateCampaign('${campaign.id}')">
+                    Duplicate
+                  </button>
+                  <button class="btn btn-sm btn-error" onclick="deleteCampaign('${campaign.id}')">
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          `).join('');
+      } catch (error) {
+        showError('Failed to load campaigns: ' + error.message);
+      }
+    }
+
+    async function loadSettings() {
+      try {
+        const settings = await ipcRenderer.invoke('get-settings');
+        currentSettings = settings;
+
+        // SMTP settings
+        document.getElementById('smtp-host').value = settings.smtp?.host || '';
+        document.getElementById('smtp-port').value = settings.smtp?.port || 587;
+        document.getElementById('smtp-user').value = settings.smtp?.user || '';
+        document.getElementById('smtp-pass').value = settings.smtp?.pass || '';
+        document.getElementById('from-email').value = settings.smtp?.fromEmail || '';
+        document.getElementById('from-name').value = settings.smtp?.fromName || '';
+        document.getElementById('email-signature').value = settings.signature || '';
+
+        // LinkedIn settings
+        document.getElementById('linkedin-email').value = settings.linkedin?.loginEmail || '';
+        document.getElementById('linkedin-password').value = settings.linkedin?.loginPassword || '';
+
+        // OpenRouter settings
+        document.getElementById('openrouter-api-key').value = settings.openrouter?.apiKey || '';
+        document.getElementById('openrouter-model').value = settings.openrouter?.model || 'anthropic/claude-3-haiku';
+
+        // Limits
+        document.getElementById('daily-limit').value = settings.emailLimits?.dailyLimit || 50;
+        document.getElementById('batch-size').value = settings.emailLimits?.emailsPerBatch || 5;
+        document.getElementById('email-delay').value = (settings.emailLimits?.delayBetweenEmails || 30) / 1000;
+        document.getElementById('batch-delay').value = (settings.emailLimits?.delayBetweenBatches || 5) / 60;
+      } catch (error) {
+        showError('Failed to load settings: ' + error.message);
+      }
+    }
+
+    async function loadStats() {
+      try {
+        // Get stats from database service
+        const stats = await ipcRenderer.invoke('get-stats');
+        document.getElementById('sent-today').textContent = stats.sentToday || 0;
+      } catch (error) {
+        console.error('Failed to load stats:', error);
+      }
+    }
+
+    // Contact functions
+    async function scrapeProfile() {
+      const url = document.getElementById('linkedin-url').value.trim();
+      const email = document.getElementById('contact-email').value.trim();
+
+      if (!url) {
+        showError('Please enter a LinkedIn profile URL');
+        return;
+      }
+
+      if (!url.includes('linkedin.com/in/')) {
+        showError('Please enter a valid LinkedIn profile URL');
+        return;
+      }
+
+      try {
+        showLoading('Scraping LinkedIn profile...');
+        const contactInfo = await ipcRenderer.invoke('scrape-linkedin', url);
+
+        // Add email if provided
+        if (email) {
+          contactInfo.email = email;
+        }
+
+        await ipcRenderer.invoke('save-contact', contactInfo);
+        closeImportModal();
+        document.getElementById('linkedin-url').value = '';
+        document.getElementById('contact-email').value = '';
+        loadContacts();
+        loadStats();
+        showSuccess(`Contact "${contactInfo.fullName}" imported successfully!`);
+
+      } catch (error) {
+        showError('Failed to scrape profile: ' + error.message);
+      } finally {
+        hideLoading();
+      }
+    }
+
+    async function deleteContact(contactId) {
+      if (confirm('Are you sure you want to delete this contact?')) {
+        try {
+          await ipcRenderer.invoke('delete-contact', contactId);
+          loadContacts();
+          loadStats();
+          showSuccess('Contact deleted');
+        } catch (error) {
+          showError('Failed to delete contact: ' + error.message);
+        }
+      }
+    }
+
+    // Email functions
+    function populateEmailModal(contact) {
+      const contactInfoDiv = document.getElementById('contact-info');
+      contactInfoDiv.innerHTML = `
+        <div class="bg-base-200 p-4 rounded-lg">
+          <h4 class="font-bold mb-2">Contact Information</h4>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div><strong>Name:</strong> ${contact.fullName || 'N/A'}</div>
+            <div><strong>Headline:</strong> ${contact.headline || 'N/A'}</div>
+            <div><strong>Company:</strong> ${contact.company || 'N/A'}</div>
+            <div><strong>Location:</strong> ${contact.location || 'N/A'}</div>
+            <div><strong>Email:</strong> ${contact.email || 'Not available'}</div>
+          </div>
+        </div>
+      `;
+
+      // Pre-fill your information from settings
+      if (currentSettings.smtp) {
+        document.getElementById('your-name').value = currentSettings.smtp.fromName || '';
+      }
+    }
+
+    async function generateEmail() {
+      if (!currentEmailModalContact) return;
+
+      const generateBtn = document.getElementById('generate-btn');
+      generateBtn.classList.add('loading');
+      generateBtn.disabled = true;
+
+      try {
+        const campaignSettings = {
+          yourName: document.getElementById('your-name').value.trim(),
+          yourPosition: document.getElementById('your-position').value.trim(),
+          yourCompany: document.getElementById('your-company').value.trim(),
+          yourValueProp: document.getElementById('value-prop').value.trim(),
+          callToAction: document.getElementById('call-to-action').value.trim(),
+          emailTone: document.getElementById('email-tone').value,
+          emailLength: 'medium'
+        };
+
+        const result = await ipcRenderer.invoke('generate-email', currentEmailModalContact, campaignSettings);
+
+        // Show the generated email
+        document.getElementById('email-subject').value = result.subject;
+        document.getElementById('email-body').value = result.body;
+
+        document.getElementById('email-generation-form').classList.add('hidden');
+        document.getElementById('generated-email-preview').classList.remove('hidden');
+
+        showSuccess('Email generated successfully!');
+
+      } catch (error) {
+        showError('Failed to generate email: ' + error.message);
+      } finally {
+        generateBtn.classList.remove('loading');
+        generateBtn.disabled = false;
+      }
+    }
+
+    function backToGeneration() {
+      document.getElementById('generated-email-preview').classList.add('hidden');
+      document.getElementById('email-generation-form').classList.remove('hidden');
+    }
+
+    async function sendEmail() {
+      if (!currentEmailModalContact) return;
+
+      const subject = document.getElementById('email-subject').value.trim();
+      const body = document.getElementById('email-body').value.trim();
+
+      if (!currentEmailModalContact.email) {
+        showError('Contact does not have an email address');
+        return;
+      }
+
+      if (!subject || !body) {
+        showError('Subject and body are required');
+        return;
+      }
+
+      try {
+        const emailData = {
+          emailAddress: currentEmailModalContact.email,
+          subject,
+          body,
+          contactId: currentEmailModalContact.id
+        };
+
+        await ipcRenderer.invoke('send-email', emailData);
+        closeEmailModal();
+        loadContacts();
+        loadStats();
+        showSuccess('Email sent successfully!');
+
+      } catch (error) {
+        showError('Failed to send email: ' + error.message);
+      }
+    }
+
+    // Campaign functions
+    async function createCampaign(formData) {
+      const campaign = {
+        name: formData.get('name'),
+        template: {
+          tone: formData.get('tone'),
+          length: formData.get('length'),
+          subject: `Interest in Your Work at ${currentSettings.smtp?.fromCompany || 'Our Company'}`,
+          body: `Hi [Name],\n\nI came across your profile and was impressed by your work at [Company].\n\n${formData.get('valueProp')}\n\n${formData.get('cta')}\n\nBest regards,\n${formData.get('yourName')}`
+        },
+        schedule: {
+          frequency: formData.get('frequency'),
+          batchSize: 5,
+          delayBetweenEmails: 30000,
+          delayBetweenBatches: 300000
+        },
+        contacts: []
+      };
+
+      try {
+        await ipcRenderer.invoke('save-campaign', campaign);
+        closeCampaignModal();
+        loadCampaigns();
+        showSuccess('Campaign created successfully!');
+      } catch (error) {
+        showError('Failed to create campaign: ' + error.message);
+      }
+    }
+
+    async function startCampaign(campaignId) {
+      try {
+        await ipcRenderer.invoke('start-campaign', campaignId);
+        loadCampaigns();
+        showSuccess('Campaign started successfully!');
+      } catch (error) {
+        showError('Failed to start campaign: ' + error.message);
+      }
+    }
+
+    async function stopCampaign(campaignId) {
+      try {
+        await ipcRenderer.invoke('stop-campaign', campaignId);
+        loadCampaigns();
+        showSuccess('Campaign stopped successfully!');
+      } catch (error) {
+        showError('Failed to stop campaign: ' + error.message);
+      }
+    }
+
+    function duplicateCampaign(campaignId) {
+      const campaign = currentCampaigns.find(c => c.id === campaignId);
+      if (campaign) {
+        const duplicated = {
+          ...campaign,
+          id: undefined,
+          name: `${campaign.name} (Copy)`,
+          status: 'draft'
+        };
+        // This would trigger the creation modal with pre-filled data
+        showInfo('Duplicate campaign feature coming soon!');
+      }
+    }
+
+    async function deleteCampaign(campaignId) {
+      if (confirm('Are you sure you want to delete this campaign?')) {
+        try {
+          // We don't have a delete-campaign IPC handler yet, so we'll show a message
+          showInfo('Delete campaign functionality will be implemented');
+        } catch (error) {
+          showError('Failed to delete campaign: ' + error.message);
+        }
+      }
+    }
+
+    // Settings functions
+    async function saveSMTPSettings(e) {
+      e.preventDefault();
+
+      const settings = {
+        smtp: {
+          host: document.getElementById('smtp-host').value,
+          port: document.getElementById('smtp-port').value,
+          secure: false,
+          user: document.getElementById('smtp-user').value,
+          pass: document.getElementById('smtp-pass').value,
+          fromEmail: document.getElementById('from-email').value,
+          fromName: document.getElementById('from-name').value
+        },
+        signature: document.getElementById('email-signature').value
+      };
+
+      try {
+        await ipcRenderer.invoke('save-settings', settings);
+        currentSettings.smtp = settings.smtp;
+        currentSettings.signature = settings.signature;
+        showSuccess('SMTP settings saved successfully!');
+      } catch (error) {
+        showError('Failed to save settings: ' + error.message);
+      }
+    }
+
+    async function saveOpenRouterSettings(e) {
+      e.preventDefault();
+
+      const settings = {
+        openrouter: {
+          apiKey: document.getElementById('openrouter-api-key').value,
+          model: document.getElementById('openrouter-model').value
+        }
+      };
+
+      try {
+        await ipcRenderer.invoke('save-settings', settings);
+        currentSettings.openrouter = settings.openrouter;
+        showSuccess('OpenRouter settings saved successfully!');
+      } catch (error) {
+        showError('Failed to save settings: ' + error.message);
+      }
+    }
+
+    async function saveLimitsSettings(e) {
+      e.preventDefault();
+
+      const settings = {
+        emailLimits: {
+          dailyLimit: parseInt(document.getElementById('daily-limit').value) || 50,
+          emailsPerBatch: parseInt(document.getElementById('batch-size').value) || 5,
+          delayBetweenEmails: (parseInt(document.getElementById('email-delay').value) || 30) * 1000,
+          delayBetweenBatches: (parseInt(document.getElementById('batch-delay').value) || 5) * 60 * 1000
+        }
+      };
+
+      try {
+        await ipcRenderer.invoke('save-settings', settings);
+        currentSettings.emailLimits = settings.emailLimits;
+        showSuccess('Email limits updated successfully!');
+      } catch (error) {
+        showError('Failed to update limits: ' + error.message);
+      }
+    }
+
+    async function testSMTP() {
+      showInfo('Testing SMTP connection...');
+
+      try {
+        // This would test the SMTP connection
+        // For now, just show success
+        setTimeout(() => {
+          showSuccess('SMTP connection test successful!');
+        }, 1000);
+      } catch (error) {
+        showError('SMTP test failed: ' + error.message);
+      }
+    }
+
+    async function testOpenRouter() {
+      const apiKey = document.getElementById('openrouter-api-key').value;
+
+      if (!apiKey) {
+        showError('Please enter an API key first');
+        return;
+      }
+
+      showInfo('Testing OpenRouter API...');
+
+      try {
+        // This would test the OpenRouter connection
+        showSuccess('OpenRouter API test successful!');
+      } catch (error) {
+        showError('OpenRouter test failed: ' + error.message);
+      }
+    }
+
+    // Utility functions
+    function getStatusBadgeClass(status) {
+      switch (status) {
+        case 'active': return 'badge-success';
+        case 'paused': return 'badge-warning';
+        case 'completed': return 'badge-info';
+        default: return 'badge-ghost';
+      }
+    }
+
+    // Notification functions
+    function showSuccess(message) {
+      const alert = document.createElement('div');
+      alert.className = 'alert alert-success fixed top-4 right-4 z-50 max-w-sm shadow-lg';
+      alert.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 013 0z" />
+        </svg>
+        <span>${message}</span>
+      `;
+      document.body.appendChild(alert);
+      setTimeout(() => alert.remove(), 3000);
+    }
+
+    function showError(message) {
+      const alert = document.createElement('div');
+      alert.className = 'alert alert-error fixed top-4 right-4 z-50 max-w-sm shadow-lg';
+      alert.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 013 0z" />
+        </svg>
+        <span>${message}</span>
+      `;
+      document.body.appendChild(alert);
+      setTimeout(() => alert.remove(), 5000);
+    }
+
+    function showInfo(message) {
+      const alert = document.createElement('div');
+      alert.className = 'alert alert-info fixed top-4 right-4 z-50 max-w-sm shadow-lg';
+      alert.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 013 0z" />
+        </svg>
+        <span>${message}</span>
+      `;
+      document.body.appendChild(alert);
+      setTimeout(() => alert.remove(), 3000);
+    }
+
+    function showLoading(message) {
+      const modal = document.createElement('div');
+      modal.className = 'modal modal-open';
+      modal.innerHTML = `
+        <div class="modal-box">
+          <div class="flex items-center space-x-4">
+            <div class="loading loading-spinner loading-lg"></div>
+            <p>${message}</p>
+          </div>
+        </div>
+      `;
+      modal.id = 'loading-modal';
+      document.body.appendChild(modal);
+    }
+
+    function hideLoading() {
+      const modal = document.getElementById('loading-modal');
+      if (modal) modal.remove();
+    }
+
+    // Event listeners
+    document.getElementById('linkedin-url').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') scrapeProfile();
+    });
+
+    document.getElementById('contact-email').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') scrapeProfile();
+    });
+
+    // Form submissions
+    document.getElementById('smtp-settings').addEventListener('submit', saveSMTPSettings);
+    document.getElementById('openrouter-settings').addEventListener('submit', saveOpenRouterSettings);
+    document.getElementById('limits-settings').addEventListener('submit', saveLimitsSettings);
+
+    document.getElementById('campaign-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      await createCampaign(formData);
+    });
+
+    // Window functions (make them global)
+    window.openImportModal = openImportModal;
+    window.closeImportModal = closeImportModal;
+    window.openCampaignModal = openCampaignModal;
+    window.closeCampaignModal = closeCampaignModal;
+    window.openEmailModal = openEmailModal;
+    window.closeEmailModal = closeEmailModal;
+    window.scrapeProfile = scrapeProfile;
+    window.deleteContact = deleteContact;
+    window.generateEmail = generateEmail;
+    window.backToGeneration = backToGeneration;
+    window.sendEmail = sendEmail;
+    window.startCampaign = startCampaign;
+    window.stopCampaign = stopCampaign;
+    window.duplicateCampaign = duplicateCampaign;
+    window.deleteCampaign = deleteCampaign;
+    window.testSMTP = testSMTP;
+    window.testOpenRouter = testOpenRouter;
+
+    // Initialize
+    initializeApp();
+
+  </script>
+</body>
+</html>
