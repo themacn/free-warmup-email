@@ -8,7 +8,7 @@ This script mimics the behavior of the Google Apps Script version but uses Node.
 
 <div align="center">
   <a href="https://jotchats.com">
-    <img src="https://jotchats.com/logo.png" alt="Jotchats Logo" width="150" height="auto">
+    <img src="jotchats-logo.jpg" alt="Jotchats Logo" width="150" height="auto">
   </a>
 </div>
 
